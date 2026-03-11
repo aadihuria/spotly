@@ -1,116 +1,176 @@
 # Spotly
 
-Spotly is a campus discovery app that helps students find, rate, and review the best places around campus — including study spots, coffee shops, restaurants, and other useful locations.
+## Overview
 
-The goal is to make it easy for students to discover where to study, work, or hang out based on real student feedback.
+Spotly is a campus discovery app designed to help students find, rate, and review the best places around campus. The idea is similar to apps like Beli or Yelp but focused specifically on college campuses.
 
----
+Users can discover study spots, restaurants, coffee shops, and other useful locations around campus. The goal is to make it easy for students to quickly see where the best places are to study, work, or hang out based on ratings and reviews from other students.
 
-## Tech Stack
-
-- Next.js
-- React
-- Node.js
-- JavaScript
-- CSS
-- Supabase
-- PostgreSQL
+This repository contains the front-end and core application logic for the project.
 
 ---
 
-## Quick Start
+# Tech Stack
 
-Run the following commands to start the project locally.
+The project currently uses the following technologies:
 
-```bash
-git clone https://github.com/aadihuria/spotly.git
-cd spotly
-npm install
-npm run dev
+**Frontend**
 
-Then open your browser and go to:
+* Next.js
+* React
+* JavaScript
+* CSS / Tailwind (if applicable)
 
-http://localhost:3000
+**Development Tools**
 
-The app should now be running locally.
+* Node.js
+* npm
+* Git + GitHub for version control
 
-Running the Project Locally (Step-by-Step)
-1. Clone the repository
-git clone https://github.com/aadihuria/spotly.git
-2. Navigate into the project
-cd spotly
-3. Install dependencies
-npm install
+(If we later add a database like Supabase or Firebase it will be added here.)
 
-This installs all required packages listed in package.json.
+---
 
-4. Start the development server
-npm run dev
-5. Open the app
+# How the Project is Structured
 
-Go to:
+The repository is organized roughly like this:
 
-http://localhost:3000
-
-Your local development server should now be running.
-
-Project Structure
-
-Example layout of the repository:
-
+```
 spotly/
 │
-├── app/              # Main application pages
+├── app/              # Main pages and routing
 ├── components/       # Reusable UI components
-├── public/           # Images and static assets
-├── styles/           # CSS / styling files
-├── package.json      # Project dependencies
-├── .gitignore
+├── public/           # Static assets (images, icons, etc.)
+├── styles/           # Styling files
+├── package.json      # Project dependencies and scripts
 └── README.md
-Features
+```
 
-Discover study spots on campus
+* `app/` contains the main pages and routing logic.
+* `components/` contains reusable UI elements.
+* `public/` stores images and other static assets.
+* `package.json` defines all dependencies and scripts.
 
-Search locations
+---
 
-Rate and review locations
+# Running the Project Locally
 
-View rankings and leaderboards
+Follow these steps to run the project on your machine.
 
-User profiles
+## 1. Clone the repository
 
-Save favorite spots
+```
+git clone https://github.com/aadihuria/spotly.git
+```
 
-Future Improvements
+## 2. Navigate into the project
 
-Real-time crowd levels
+```
+cd spotly
+```
 
-Campus-specific filtering
+## 3. Install dependencies
 
-Map integration
+```
+npm install
+```
 
-Mobile app version
+This installs all required packages defined in `package.json`.
 
-Social features (follow friends, shared lists)
+## 4. Start the development server
 
-Contributing
+```
+npm run dev
+```
 
-If you want to contribute to the project:
+## 5. Open the app
 
-Fork the repository
+Open a browser and go to:
 
-Create a new branch
+```
+http://localhost:3000
+```
 
-git checkout -b feature-name
+The application should now be running locally.
 
-Make your changes
+---
 
-Commit your changes
+# Making Changes to the Project
 
-git commit -m "Add feature"
+Once the project is running locally, you can edit any files in the repository and the app will automatically update in the browser.
 
-Push to GitHub
+Typical development workflow:
 
-git push origin feature-name
+1. Start the dev server
 
-Open a Pull Request
+```
+npm run dev
+```
+
+2. Edit code in the project files
+
+3. Save the file
+
+Next.js will automatically reload the page with the new changes.
+
+---
+
+# Pushing Changes to GitHub
+
+When you make updates to the project:
+
+1. Add the changes
+
+```
+git add .
+```
+
+2. Commit the changes
+
+```
+git commit -m "Describe what you changed"
+```
+
+3. Push to GitHub
+
+```
+git push
+```
+
+This will update the repository so everyone working on the project has the latest version.
+
+---
+
+# Future Features
+
+Planned features for Spotly include:
+
+* Study spot discovery
+* Ratings and reviews
+* Search functionality
+* Leaderboards / top locations
+* User profiles
+* Saved locations
+
+---
+
+# Notes
+
+If you run into issues installing dependencies or running the dev server, make sure you have:
+
+* Node.js installed
+* npm installed
+
+You can check with:
+
+```
+node -v
+npm -v
+```
+
+---
+
+# Contributors
+
+* Aadi Huria
+* Devarsh Das
