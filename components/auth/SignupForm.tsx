@@ -29,8 +29,24 @@ export function SignupForm() {
     setLoading(false);
 
     if (!res.ok) {
-      const data = (await res.json()) as { error?: string };
-      setError(data.error ?? 'Could not create account');
+      const contentType = res.headers.get('content-type') ?? '';
+      let message = 'Could not create account';
+
+      if (contentType.includes('application/json')) {
+        try {
+          const data = (await res.json()) as { error?: string };
+          message = data.error ?? message;
+        } catch {
+          // Ignore JSON parsing errors and keep fallback message.
+        }
+      } else {
+        const raw = (await res.text()).trim();
+        if (raw) {
+          message = raw;
+        }
+      }
+
+      setError(message);
       return;
     }
 
