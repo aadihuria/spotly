@@ -8,6 +8,39 @@ export function SignupForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  function normalizeErrorMessage(input: unknown): string {
+    if (typeof input === 'string' && input.trim()) return input;
+    if (Array.isArray(input)) {
+      const firstString = input.find((item): item is string => typeof item === 'string' && item.trim().length > 0);
+      if (firstString) return firstString;
+    }
+    if (input && typeof input === 'object') {
+      const record = input as Record<string, unknown>;
+      if (Array.isArray(record.formErrors)) {
+        const firstFormError = record.formErrors.find(
+          (item): item is string => typeof item === 'string' && item.trim().length > 0,
+        );
+        if (firstFormError) return firstFormError;
+      }
+      if (record.fieldErrors && typeof record.fieldErrors === 'object') {
+        for (const value of Object.values(record.fieldErrors as Record<string, unknown>)) {
+          if (Array.isArray(value)) {
+            const firstFieldError = value.find(
+              (item): item is string => typeof item === 'string' && item.trim().length > 0,
+            );
+            if (firstFieldError) return firstFieldError;
+          }
+        }
+      }
+      try {
+        return JSON.stringify(input);
+      } catch {
+        return 'Could not create account';
+      }
+    }
+    return 'Could not create account';
+  }
+
   async function onSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
@@ -34,8 +67,8 @@ export function SignupForm() {
 
       if (contentType.includes('application/json')) {
         try {
-          const data = (await res.json()) as { error?: string };
-          message = data.error ?? message;
+          const data = (await res.json()) as { error?: unknown };
+          message = normalizeErrorMessage(data.error);
         } catch {
           // Ignore JSON parsing errors and keep fallback message.
         }

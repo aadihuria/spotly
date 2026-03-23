@@ -21,7 +21,12 @@ export async function POST(req: Request) {
   const parsed = signupSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    const flattened = parsed.error.flatten();
+    const fieldMessage = Object.values(flattened.fieldErrors)
+      .flat()
+      .find((msg): msg is string => typeof msg === 'string' && msg.length > 0);
+    const message = fieldMessage ?? flattened.formErrors[0] ?? 'Invalid signup data';
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
   const exists = await prisma.user.findFirst({
