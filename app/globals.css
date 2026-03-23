@@ -2,25 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+@layer base {
+  :root {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --muted-foreground: 215 20.2% 65.1%;
   }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+  }
+
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
   }
 }
 
-/* Leaflet popup custom styles */
-.leaflet-popup-content-wrapper {
-  border-radius: 16px !important;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
-  border: 1px solid #f1f5f9;
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent;
+  }
+
+  .cyber-glow {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  }
+
+  .btn-glow {
+    @apply rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-5 py-3 font-semibold text-white transition hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(59,130,246,0.55)];
+  }
+
+  .bg-grid {
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.25), transparent 30%),
+      radial-gradient(circle at 80% 10%, rgba(168, 85, 247, 0.22), transparent 30%),
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: auto, auto, 36px 36px, 36px 36px;
+  }
 }
-.leaflet-popup-tip {
-  background: white !important;
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
-.leaflet-popup-content {
-  margin: 12px !important;
+
+@keyframes pulse-glow {
+  0%,100% { box-shadow: 0 0 10px rgba(59, 130, 246, .5); }
+  50% { box-shadow: 0 0 24px rgba(59, 130, 246, .9); }
 }
