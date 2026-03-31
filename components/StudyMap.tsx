@@ -26,14 +26,20 @@ export default function StudyMap({
 
   useEffect(() => {
     if (typeof window === "undefined" || !mapRef.current) return;
-    if (mapInstanceRef.current) return;
+    let cancelled = false;
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
     // If container was already initialized (React strict mode double-invoke), destroy it first
     if ((mapRef.current as any)._leaflet_id) {
       (mapRef.current as any)._leaflet_id = null;
     }
+    mapRef.current.innerHTML = "";
 
     // Dynamically import Leaflet
     import("leaflet").then((L) => {
+      if (cancelled || !mapRef.current) return;
       // Fix default marker icons
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
@@ -82,7 +88,7 @@ export default function StudyMap({
               <span style="color:#f59e0b;font-weight:bold;font-size:12px;">★ ${spot.rating}</span>
               <span style="font-size:11px;color:#6b7280;">(${spot.total_reviews} reviews)</span>
             </div>
-            <a href="/spot/${spot.id}" style="display:block;margin-top:8px;text-align:center;background:#2563eb;color:white;border-radius:8px;padding:6px;font-size:12px;font-weight:600;text-decoration:none;">View Details →</a>
+            <a href="/spots/${spot.id}" style="display:block;margin-top:8px;text-align:center;background:#2563eb;color:white;border-radius:8px;padding:6px;font-size:12px;font-weight:600;text-decoration:none;">View Details →</a>
           </div>
         `);
 
@@ -95,9 +101,14 @@ export default function StudyMap({
     });
 
     return () => {
+      cancelled = true;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+      }
+      markersRef.current = [];
+      if (mapRef.current) {
+        mapRef.current.innerHTML = "";
       }
     };
   }, []);
@@ -111,12 +122,12 @@ export default function StudyMap({
   }, [selectedSpot]);
 
   return (
-    <>
+    <div className="overflow-hidden rounded-2xl shadow-md">
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
       />
-      <div ref={mapRef} style={{ height, width: "100%" }} />
-    </>
+      <div ref={mapRef} className="w-full" style={{ height, width: "100%" }} />
+    </div>
   );
 }

@@ -2,25 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+@layer base {
+  :root {
+    --spotly-bg: 255 255 255;
+    --spotly-card: 243 244 246;
+    --spotly-text: 30 58 95;
+    --spotly-body: 75 85 99;
+    --spotly-blue: 37 99 235;
+    --spotly-star: 250 204 21;
   }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+
+  .dark {
+    --spotly-bg: 15 23 42;
+    --spotly-card: 30 41 59;
+    --spotly-text: 248 250 252;
+    --spotly-body: 203 213 225;
+    --spotly-blue: 96 165 250;
+    --spotly-star: 250 204 21;
+  }
+
+  * {
+    @apply border-gray-200;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased transition-colors duration-300;
+    background: rgb(var(--spotly-bg));
+    color: rgb(var(--spotly-text));
+  }
+
+  button {
+    @apply transition-opacity;
+  }
+
+  button:active,
+  a:active {
+    opacity: 0.85;
   }
 }
 
-/* Leaflet popup custom styles */
-.leaflet-popup-content-wrapper {
-  border-radius: 16px !important;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
-  border: 1px solid #f1f5f9;
-}
-.leaflet-popup-tip {
-  background: white !important;
-}
-.leaflet-popup-content {
-  margin: 12px !important;
+@layer components {
+  .app-shell {
+    @apply mx-auto w-full max-w-screen-xl;
+  }
+
+  .screen-width {
+    @apply mx-auto w-full max-w-[430px] md:max-w-screen-xl;
+  }
+
+  .page-padding {
+    @apply px-4 py-5 md:px-6 md:py-6;
+  }
+
+  .spotly-card {
+    @apply rounded-2xl shadow-md;
+    background: rgb(var(--spotly-card));
+  }
+
+  .spotly-button-primary {
+    @apply rounded-xl px-4 py-3 font-semibold text-white transition-opacity;
+    background: rgb(var(--spotly-blue));
+  }
+
+  .spotly-button-secondary {
+    @apply rounded-xl border-2 bg-white px-4 py-3 font-semibold transition-opacity dark:bg-slate-900;
+    border-color: rgb(var(--spotly-blue));
+    color: rgb(var(--spotly-blue));
+  }
+
+  .spotly-heading {
+    color: rgb(var(--spotly-text));
+  }
+
+  .spotly-body {
+    color: rgb(var(--spotly-body));
+  }
+
+  .spotly-chip {
+    @apply rounded-full px-3 py-1 text-sm font-medium transition-colors;
+  }
+
+  .spotly-skeleton {
+    @apply animate-pulse rounded-2xl bg-gray-200 dark:bg-slate-700;
+  }
+
+  .spotly-input {
+    @apply w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900;
+    color: rgb(var(--spotly-text));
+  }
 }

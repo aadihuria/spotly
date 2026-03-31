@@ -2,19 +2,28 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 
+export type SpotReaction = "liked" | "okay" | "disliked";
+export type SpotType = "Building" | "Coffee Shop" | "Library" | "Other";
+
 export type Review = {
   id: string;
   spotId: string;
   spotName: string;
   spotImage: string;
+  profileHref?: string;
   userId: string;
   userName: string;
   userInitial: string;
-  rating: number; // 0-10
+  rating: number;
+  spotType: SpotType;
+  reaction: SpotReaction;
+  goodFor: string[];
+  taggedPeople: string[];
+  visitDate: string;
   text: string;
-  liked: string;   // what they liked
-  disliked: string; // what they didn't like
-  photos: string[]; // base64 or object URLs
+  liked: string;
+  disliked: string;
+  photos: string[];
   date: string;
   timestamp: number;
 };
@@ -23,12 +32,14 @@ type ReviewContextType = {
   reviews: Review[];
   addReview: (review: Review) => void;
   getReviewsForSpot: (spotId: string) => Review[];
+  getReviewsByUser: (userId: string) => Review[];
 };
 
 const ReviewContext = createContext<ReviewContextType>({
   reviews: [],
   addReview: () => {},
   getReviewsForSpot: () => [],
+  getReviewsByUser: () => [],
 });
 
 const SEED_REVIEWS: Review[] = [
@@ -41,6 +52,11 @@ const SEED_REVIEWS: Review[] = [
     userName: "Alex K.",
     userInitial: "A",
     rating: 9,
+    spotType: "Library",
+    reaction: "liked",
+    goodFor: ["Quiet", "Solo Study", "Late Night", "WiFi"],
+    taggedPeople: ["Nina", "Marcus"],
+    visitDate: "2026-03-28",
     text: "Best late-night study spot on campus! Always has space even during finals week if you go to the upper floors.",
     liked: "Open 24/7, tons of outlets, great quiet floors on upper levels",
     disliked: "Gets super crowded during finals, printer lines can be long",
@@ -57,6 +73,11 @@ const SEED_REVIEWS: Review[] = [
     userName: "Priya M.",
     userInitial: "P",
     rating: 8,
+    spotType: "Library",
+    reaction: "liked",
+    goodFor: ["Collaborative", "Group Study", "WiFi"],
+    taggedPeople: ["Ethan"],
+    visitDate: "2026-03-22",
     text: "Really solid spot. The group study rooms are great if you book ahead. WiFi is fast and reliable.",
     liked: "Reservable group rooms, fast WiFi, lots of natural light on lower floors",
     disliked: "Loud on floors 1-2, hard to find a seat on weekday evenings",
@@ -73,6 +94,11 @@ const SEED_REVIEWS: Review[] = [
     userName: "Tom R.",
     userInitial: "T",
     rating: 10,
+    spotType: "Building",
+    reaction: "liked",
+    goodFor: ["Collaborative", "Quiet", "Night Study", "Long Sessions"],
+    taggedPeople: [],
+    visitDate: "2026-03-27",
     text: "The DUDE is unmatched. 24/7, beautiful building, every kind of seating you could want. North campus gem.",
     liked: "Open 24/7, 3D printers, every type of workspace, huge building",
     disliked: "Far from central campus if you don't live on North",
@@ -89,6 +115,11 @@ const SEED_REVIEWS: Review[] = [
     userName: "Emma T.",
     userInitial: "E",
     rating: 10,
+    spotType: "Library",
+    reaction: "liked",
+    goodFor: ["Quiet", "Solo Study", "Natural Light"],
+    taggedPeople: ["Lena"],
+    visitDate: "2026-03-25",
     text: "Honestly the most beautiful study spot in all of Ann Arbor. The architecture alone motivates you to study.",
     liked: "Stunning architecture, pin-drop quiet, amazing atmosphere",
     disliked: "Limited hours, not open super late",
@@ -105,6 +136,11 @@ const SEED_REVIEWS: Review[] = [
     userName: "Jake L.",
     userInitial: "J",
     rating: 7,
+    spotType: "Coffee Shop",
+    reaction: "okay",
+    goodFor: ["Coffee", "Quick Stop", "Loud"],
+    taggedPeople: ["Chris", "Olivia"],
+    visitDate: "2026-03-26",
     text: "Great vibe for a chill study session. Coffee is amazing. Gets busy on weekends but weekday mornings are perfect.",
     liked: "Amazing coffee, cozy atmosphere, good WiFi",
     disliked: "Limited outlets, small space, can get loud on weekends",
@@ -124,8 +160,11 @@ export function ReviewProvider({ children }: { children: ReactNode }) {
   const getReviewsForSpot = (spotId: string) =>
     reviews.filter((r) => r.spotId === spotId).sort((a, b) => b.timestamp - a.timestamp);
 
+  const getReviewsByUser = (userId: string) =>
+    reviews.filter((r) => r.userId === userId).sort((a, b) => b.timestamp - a.timestamp);
+
   return (
-    <ReviewContext.Provider value={{ reviews, addReview, getReviewsForSpot }}>
+    <ReviewContext.Provider value={{ reviews, addReview, getReviewsForSpot, getReviewsByUser }}>
       {children}
     </ReviewContext.Provider>
   );

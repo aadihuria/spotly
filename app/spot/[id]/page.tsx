@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -17,8 +17,9 @@ import { useReviews } from "@/components/ReviewProvider";
 
 const StudyMap = dynamic(() => import("@/components/StudyMap"), { ssr: false });
 
-export default function SpotPage({ params }: { params: { id: string } }) {
-  const spot = ANN_ARBOR_SPOTS.find((s) => s.id === params.id);
+export default function SpotPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const spot = ANN_ARBOR_SPOTS.find((s) => s.id === id);
   if (!spot) return notFound();
 
   const { user } = useAuth();

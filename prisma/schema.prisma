@@ -1,0 +1,421 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum GroupType {
+  course
+  interest
+  major
+}
+
+enum GroupRole {
+  admin
+  member
+}
+
+enum SpotPrice {
+  Free
+  DOLLAR
+  DOUBLE_DOLLAR
+  TRIPLE_DOLLAR
+}
+
+enum SpotStatus {
+  Open
+  Closed
+}
+
+enum Occupancy {
+  Light
+  Moderate
+  Busy
+  Full
+}
+
+enum MessageType {
+  text
+  image
+  system
+}
+
+enum ListType {
+  BEEN
+  WANT
+  FAVORITES
+}
+
+enum NotificationType {
+  message
+  group
+  review
+  system
+}
+
+enum FriendshipStatus {
+  pending
+  accepted
+  declined
+}
+
+enum DirectMessageRequestStatus {
+  pending
+  accepted
+  declined
+}
+
+enum VerificationCodeType {
+  email_signup
+  sms_login
+}
+
+model User {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  username        String          @unique
+  displayName     String?
+  passwordHash    String
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+  twoFactorEnabled Boolean        @default(false)
+  avatar          String?
+  phone           String?
+  instagram       String?
+  snapchat        String?
+  coverImage      String?
+  bio             String?
+  university      String
+  major           String?
+  graduationYear  Int?
+  interests       String[]
+  darkMode        Boolean         @default(true)
+  notificationsOn Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  spotsUploaded   StudySpot[]     @relation("SpotUploader")
+  imagesUploaded  SpotImage[]
+  reviews         Review[]
+  groupMembership GroupMember[]
+  groupsCreated   StudyGroup[]    @relation("GroupCreator")
+  directMessages  Message[]       @relation("MessageSender")
+  notifications   Notification[]
+  userLists       UserList[]
+  userRatings     UserRating[]
+  checkIns        SpotCheckIn[]
+  spotLists       SpotList[]
+  sentFriendships Friendship[]     @relation("FriendshipRequester")
+  receivedFriendships Friendship[] @relation("FriendshipAddressee")
+  sentDmRequests  DirectMessageRequest[] @relation("DmRequester")
+  receivedDmRequests DirectMessageRequest[] @relation("DmRecipient")
+  verificationCodes VerificationCode[]
+}
+
+model StudySpot {
+  id               String         @id @default(cuid())
+  name             String
+  description      String
+  address          String
+  latitude         Float
+  longitude        Float
+  tags             String[]
+  features         String[]
+  amenities        String[]
+  hoursJson        Json
+  price            SpotPrice
+  status           SpotStatus
+  currentOccupancy Occupancy
+  verified         Boolean        @default(false)
+  uploadedById     String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  uploadedBy       User           @relation("SpotUploader", fields: [uploadedById], references: [id])
+  images           SpotImage[]
+  reviews          Review[]
+  groups           StudyGroup[]
+  checkIns         SpotCheckIn[]
+  userLists        UserList[]
+  userRatings      UserRating[]
+  spotListItems    SpotListItem[]
+}
+
+model SpotImage {
+  id          String   @id @default(cuid())
+  spotId      String
+  url         String
+  caption     String?
+  uploadedById String
+  createdAt   DateTime @default(now())
+
+  spot        StudySpot @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  uploadedBy  User      @relation(fields: [uploadedById], references: [id])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  spotId     String
+  rating     Int
+  spotType   String?
+  reaction   String?
+  goodFor    String[] @default([])
+  taggedPeople String[] @default([])
+  visitDate  DateTime?
+  text       String
+  liked      String?
+  disliked   String?
+  images     String[]
+  helpful    Int      @default(0)
+  helpfulBy  String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spot       StudySpot @relation(fields: [spotId], references: [id], onDelete: Cascade)
+}
+
+model SpotList {
+  id        String         @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     SpotListItem[]
+}
+
+model SpotListItem {
+  id        String    @id @default(cuid())
+  listId    String
+  spotId    String
+  createdAt DateTime  @default(now())
+
+  list      SpotList  @relation(fields: [listId], references: [id], onDelete: Cascade)
+  spot      StudySpot @relation(fields: [spotId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, spotId])
+}
+
+model StudyGroup {
+  id             String        @id @default(cuid())
+  name           String
+  description    String
+  type           GroupType
+  course         String?
+  subject        String?
+  interests      String[]
+  avatar         String?
+  coverImage     String?
+  meetingJson    Json
+  location       String?
+  spotId         String?
+  maxMembers     Int           @default(30)
+  privacy        String        @default("public")
+  joinApproval   String        @default("auto")
+  createdById    String
+  pinnedMessages String[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  createdBy      User          @relation("GroupCreator", fields: [createdById], references: [id])
+  spot           StudySpot?    @relation(fields: [spotId], references: [id])
+  members        GroupMember[]
+  messages       Message[]
+  joinRequests   GroupJoinRequest[]
+}
+
+model GroupMember {
+  id        String    @id @default(cuid())
+  groupId   String
+  userId    String
+  role      GroupRole @default(member)
+  joinedAt  DateTime  @default(now())
+
+  group     StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model GroupJoinRequest {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  group     StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model Conversation {
+  id           String    @id @default(cuid())
+  participants String[]
+  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime  @default(now())
+  messages     Message[]
+  dmRequest    DirectMessageRequest?
+}
+
+model Message {
+  id             String      @id @default(cuid())
+  senderId       String
+  recipientId    String?
+  groupId        String?
+  conversationId String?
+  content        String
+  type           MessageType @default(text)
+  imageUrl       String?
+  replyToId      String?
+  readBy         String[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  sender         User        @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  group          StudyGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model SpotCheckIn {
+  id        String   @id @default(cuid())
+  userId    String
+  spotId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spot      StudySpot @relation(fields: [spotId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  type      NotificationType
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserList {
+  id        String   @id @default(cuid())
+  userId    String
+  spotId    String
+  listType  ListType
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spot      StudySpot @relation(fields: [spotId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, spotId, listType])
+}
+
+model UserRating {
+  id        String   @id @default(cuid())
+  userId    String
+  spotId    String
+  rating    Int
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spot      StudySpot @relation(fields: [spotId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, spotId])
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      FriendshipStatus @default(pending)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  requester   User             @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee   User             @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+}
+
+model DirectMessageRequest {
+  id             String                     @id @default(cuid())
+  requesterId    String
+  recipientId    String
+  conversationId String?                    @unique
+  initialMessage String?
+  status         DirectMessageRequestStatus @default(pending)
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  requester      User                       @relation("DmRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient      User                       @relation("DmRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  conversation   Conversation?              @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@unique([requesterId, recipientId])
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model VerificationCode {
+  id         String               @id @default(cuid())
+  userId     String?
+  email      String?
+  phone      String?
+  type       VerificationCodeType
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int                  @default(0)
+  createdAt  DateTime             @default(now())
+
+  user       User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([email, type])
+  @@index([phone, type])
+}

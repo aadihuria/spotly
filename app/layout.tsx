@@ -1,25 +1,23 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/components/AuthProvider";
-import { ReviewProvider } from "@/components/ReviewProvider";
+import type { Metadata } from 'next';
+import { DM_Sans } from 'next/font/google';
+import './globals.css';
+import { Providers } from '@/components/providers';
 
-const inter = Inter({ subsets: ["latin"] });
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: "Spotly – Discover study spots around Ann Arbor",
-  description: "Discover, review, and share study spots around Ann Arbor.",
+  title: 'Spotly',
+  description: 'Discover the best study spots on campus.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <AuthProvider>
-          <ReviewProvider>
-            {children}
-          </ReviewProvider>
-        </AuthProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${dmSans.className} min-h-screen`}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
