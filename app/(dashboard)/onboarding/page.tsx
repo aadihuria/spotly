@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Check } from 'lucide-react';
 
@@ -46,9 +46,6 @@ export default function OnboardingPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem('onboarding_seen', '1');
-  }, []);
 
   function toggle(label: string) {
     setSelected((prev) => {
@@ -113,14 +110,12 @@ export default function OnboardingPage() {
           <button
             type="button"
             onClick={finish}
-            disabled={saving}
-            className="spotly-button-primary w-full"
+            disabled={saving || selected.size === 0}
+            className="spotly-button-primary w-full disabled:opacity-40"
           >
-            {saving ? 'Saving...' : selected.size === 0 ? 'Skip for now' : `Continue with ${selected.size} interest${selected.size !== 1 ? 's' : ''}`}
+            {saving ? 'Saving...' : selected.size === 0 ? 'Pick at least one interest' : `Continue with ${selected.size} interest${selected.size !== 1 ? 's' : ''}`}
           </button>
-          {selected.size === 0 && (
-            <p className="text-center text-xs text-gray-400">You can update this anytime in your profile</p>
-          )}
+          <p className="text-center text-xs text-gray-400">You can update this anytime in your profile</p>
         </div>
       </div>
     </div>

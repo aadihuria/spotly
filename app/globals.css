@@ -51,11 +51,11 @@
   }
 
   .screen-width {
-    @apply mx-auto w-full max-w-[430px] md:max-w-screen-xl;
+    @apply mx-auto w-full max-w-[430px] md:max-w-2xl lg:max-w-4xl xl:max-w-screen-xl;
   }
 
   .page-padding {
-    @apply px-4 py-5 md:px-6 md:py-6;
+    @apply px-4 py-5 md:px-8 md:py-6;
   }
 
   .spotly-card {

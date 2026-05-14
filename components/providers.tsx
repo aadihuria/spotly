@@ -1,16 +1,19 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
+import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { ReviewProvider } from '@/components/ReviewProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <ReviewProvider>
-        {children}
-        <Toaster richColors position="top-right" />
-      </ReviewProvider>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <ReviewProvider>
+          {children}
+          <Toaster richColors position="top-right" />
+        </ReviewProvider>
+      </ThemeProvider>
     </SessionProvider>
   );
 }

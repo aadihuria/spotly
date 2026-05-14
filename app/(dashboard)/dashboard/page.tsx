@@ -79,10 +79,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (meData?.user && meData.user.interests.length === 0) {
-      const seen = typeof window !== 'undefined' && localStorage.getItem('onboarding_seen');
-      if (!seen) {
-        router.replace('/onboarding');
-      }
+      router.replace('/onboarding');
     }
   }, [meData, router]);
 
