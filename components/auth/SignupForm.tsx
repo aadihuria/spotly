@@ -101,7 +101,7 @@ export function SignupForm() {
         return;
       }
 
-      const data = (await res.json()) as { requiresEmailVerification?: boolean; devCodePreview?: string };
+      const data = (await res.json()) as { requiresEmailVerification?: boolean; devCodePreview?: string; emailSent?: boolean };
       setVerificationEmail(String(payload.email ?? ''));
       setNeedsVerification(Boolean(data.requiresEmailVerification));
       setDevCodePreview(data.devCodePreview ?? null);
@@ -181,7 +181,7 @@ export function SignupForm() {
           </p>
           {devCodePreview ? (
             <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
-              Dev preview code: <span className="font-semibold">{devCodePreview}</span>
+              Your verification code: <span className="font-semibold">{devCodePreview}</span>
             </p>
           ) : null}
         </div>

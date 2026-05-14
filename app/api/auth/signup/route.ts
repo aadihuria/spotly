@@ -71,13 +71,19 @@ export async function POST(req: Request) {
         },
       });
 
-      await deliverEmailVerificationCode(existingByEmail.email, code);
+      let emailSent = true;
+      try {
+        await deliverEmailVerificationCode(existingByEmail.email, code);
+      } catch {
+        emailSent = false;
+      }
 
       return NextResponse.json(
         {
           user: existingByEmail,
           requiresEmailVerification: true,
-          devCodePreview: getDevPreviewCode(code),
+          devCodePreview: getDevPreviewCode(code) ?? (emailSent ? undefined : code),
+          emailSent,
           message: 'Your account already exists but still needs email verification.',
         },
         { status: 200 }
@@ -129,13 +135,19 @@ export async function POST(req: Request) {
       },
     });
 
-    await deliverEmailVerificationCode(user.email, code);
+    let emailSent = true;
+    try {
+      await deliverEmailVerificationCode(user.email, code);
+    } catch {
+      emailSent = false;
+    }
 
     return NextResponse.json(
       {
         user,
         requiresEmailVerification: true,
-        devCodePreview: getDevPreviewCode(code),
+        devCodePreview: getDevPreviewCode(code) ?? (emailSent ? undefined : code),
+        emailSent,
       },
       { status: 201 }
     );
