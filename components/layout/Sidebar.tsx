@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { Bookmark, GraduationCap, MessageSquare, Newspaper, Search, Trophy, UserCircle, Users } from 'lucide-react';
 import { useUser } from '@/hooks/useUser';
+import { useProfile } from '@/hooks/useProfile';
 
 const items = [
   { href: '/dashboard', label: 'Feed', icon: Newspaper },
@@ -19,9 +20,11 @@ const items = [
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useUser();
-  const userName = user?.name?.trim() || user?.email?.split('@')[0] || 'Spotly member';
+  const { profile } = useProfile();
+  const userName = profile?.displayName || user?.name?.trim() || profile?.username || user?.email?.split('@')[0] || 'Spotly member';
   const userSubline = user?.email || 'Signed in';
   const userInitial = userName.charAt(0).toUpperCase();
+  const avatarUrl = profile?.avatar ?? null;
 
   return (
     <header className="sticky top-0 z-30 hidden border-b border-gray-100 bg-white/95 backdrop-blur md:block dark:border-slate-800 dark:bg-slate-950/95">
@@ -58,9 +61,13 @@ export function Sidebar() {
         </nav>
 
         <div className="flex min-w-0 shrink-0 items-center gap-3 rounded-2xl bg-gray-50 px-3 py-3 dark:bg-slate-900">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#2563EB] text-sm font-bold text-white">
-            {userInitial}
-          </div>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={userName} className="h-11 w-11 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#2563EB] text-sm font-bold text-white">
+              {userInitial}
+            </div>
+          )}
           <div className="hidden min-w-0 xl:block">
             <p className="max-w-[160px] truncate text-sm font-semibold text-[#1E3A5F] dark:text-white">{userName}</p>
             <p className="max-w-[160px] truncate text-xs text-gray-500 dark:text-slate-300">{userSubline}</p>

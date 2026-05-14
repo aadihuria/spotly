@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import {
@@ -18,11 +18,47 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ReviewCard from '@/components/ReviewCard';
-import { ImageUploader } from '@/components/spots/ImageUploader';
 import { useUser } from '@/hooks/useUser';
+import { useProfile } from '@/hooks/useProfile';
+import { uploadImage } from '@/lib/uploadImage';
 import { Review } from '@/components/ReviewProvider';
 
-const interests = ['Coffee ☕', 'Quiet 🤫', 'Libraries 📚', 'Cafes ☕', 'Outdoors 🌿', 'Night Owl 🦉', 'Group Study 👥', 'Solo Study 🎧'];
+const INTERESTS = [
+  // Academic
+  { label: 'Computer Science', emoji: '💻' },
+  { label: 'Data Science', emoji: '📊' },
+  { label: 'Engineering', emoji: '⚙️' },
+  { label: 'Pre-Med / Biology', emoji: '🧬' },
+  { label: 'Business / Finance', emoji: '📈' },
+  { label: 'Economics', emoji: '🏦' },
+  { label: 'Law', emoji: '⚖️' },
+  { label: 'Psychology', emoji: '🧠' },
+  { label: 'Chemistry', emoji: '🧪' },
+  { label: 'Physics', emoji: '⚛️' },
+  { label: 'Mathematics', emoji: '📐' },
+  { label: 'Political Science', emoji: '🏛️' },
+  { label: 'Literature / Writing', emoji: '📖' },
+  { label: 'History', emoji: '🏺' },
+  { label: 'Art & Design', emoji: '🎨' },
+  { label: 'Music', emoji: '🎵' },
+  { label: 'Film & Media', emoji: '🎬' },
+  { label: 'Architecture', emoji: '🏗️' },
+  { label: 'Environmental Science', emoji: '🌿' },
+  { label: 'Neuroscience', emoji: '🧬' },
+  { label: 'Public Health', emoji: '🏥' },
+  { label: 'Sociology', emoji: '👥' },
+  { label: 'Philosophy', emoji: '💭' },
+  { label: 'Languages', emoji: '🌍' },
+  // Study style
+  { label: 'Quiet Study', emoji: '🤫' },
+  { label: 'Group Study', emoji: '🤝' },
+  { label: 'Coffee Lover', emoji: '☕' },
+  { label: 'Night Owl', emoji: '🦉' },
+  { label: 'Morning Person', emoji: '🌅' },
+  { label: 'Outdoor Spaces', emoji: '🌳' },
+  { label: 'Research', emoji: '🔬' },
+  { label: 'Hackathons', emoji: '🚀' },
+];
 
 const menuItems = [
   ['Feed', '/dashboard', Newspaper],
@@ -57,6 +93,9 @@ type ProfilePayload = {
 
 export default function ProfilePage() {
   const { user } = useUser();
+  const { mutate: mutateProfile } = useProfile();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [profile, setProfile] = useState<ProfilePayload | null>(null);
   const [ratings, setRatings] = useState<Review[]>([]);
   const [email, setEmail] = useState(user?.email ?? '');
@@ -160,6 +199,35 @@ export default function ProfilePage() {
     );
   }
 
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    setAvatarUploading(true);
+    try {
+      const url = await uploadImage(file);
+      setAvatarPreview(url);
+      await fetch(`/api/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          phone,
+          instagram,
+          snapchat,
+          interests: selectedInterests,
+          avatar: url,
+          displayName: profile?.displayName ?? username,
+        }),
+      });
+      void mutateProfile();
+      toast.success('Profile photo updated');
+    } catch {
+      toast.error('Failed to upload photo');
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
+
   async function saveProfile() {
     if (!userId) return;
     setSaving(true);
@@ -184,6 +252,7 @@ export default function ProfilePage() {
       return;
     }
 
+    void mutateProfile();
     toast.success('Profile updated');
   }
 
@@ -204,7 +273,13 @@ export default function ProfilePage() {
       </div>
 
       <section className="space-y-4 text-center">
-        <div className="relative mx-auto h-20 w-20">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={avatarUploading}
+          className="relative mx-auto block h-20 w-20"
+          aria-label="Change profile photo"
+        >
           {avatarPreview ? (
             <img src={avatarPreview} alt="Profile" className="h-full w-full rounded-full border-4 border-[#2563EB] object-cover" />
           ) : (
@@ -213,9 +288,20 @@ export default function ProfilePage() {
             </div>
           )}
           <div className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-md">
-            <Camera className="h-4 w-4" />
+            {avatarUploading ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <Camera className="h-4 w-4" />
+            )}
           </div>
-        </div>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleAvatarUpload}
+        />
         <div>
           <h1 className="text-xl font-bold text-[#1E3A5F] dark:text-white">{username}</h1>
           <p className="text-sm text-gray-500 dark:text-slate-300">@{profile?.username ?? username}</p>
@@ -238,11 +324,6 @@ export default function ProfilePage() {
       <section className="rounded-2xl bg-[#F3F4F6] p-4 shadow-md dark:bg-slate-800">
         <h2 className="mb-4 text-base font-semibold text-[#1E3A5F] dark:text-white">Edit Profile</h2>
         <div className="space-y-3">
-          <div className="rounded-2xl bg-white p-4 dark:bg-slate-900">
-            <p className="mb-2 text-sm font-medium text-[#1E3A5F] dark:text-white">Profile photo</p>
-            <ImageUploader onUploaded={(url) => setAvatarPreview(url)} />
-          </div>
-
           <div className="rounded-2xl bg-white px-4 py-3 dark:bg-slate-900">
             <label className="mb-1 block text-xs font-semibold text-[#1E3A5F] dark:text-white">Email *</label>
             <div className="flex items-center gap-3">
@@ -288,20 +369,21 @@ export default function ProfilePage() {
           <div className="space-y-2">
             <p className="text-xs font-semibold text-[#1E3A5F] dark:text-white">Interests</p>
             <div className="flex flex-wrap gap-2">
-              {interests.map((interest) => {
-                const active = selectedInterests.includes(interest);
+              {INTERESTS.map(({ label, emoji }) => {
+                const active = selectedInterests.includes(label);
                 return (
                   <button
-                    key={interest}
+                    key={label}
                     type="button"
-                    onClick={() => toggleInterest(interest)}
-                    className={`rounded-full px-3 py-1 text-sm font-medium ${
+                    onClick={() => toggleInterest(label)}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
                       active
                         ? 'bg-[#2563EB] text-white'
                         : 'border border-gray-300 bg-white text-gray-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200'
                     }`}
                   >
-                    {interest}
+                    <span>{emoji}</span>
+                    {label}
                   </button>
                 );
               })}
