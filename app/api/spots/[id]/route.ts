@@ -16,13 +16,13 @@ function serializeReview(review: {
   taggedPeople: string[];
   visitDate: Date | null;
   createdAt: Date;
-  user: { username: string; displayName: string | null; avatar: string | null };
+  user?: { username: string; displayName: string | null; avatar: string | null } | null;
 }) {
   return {
     id: review.id,
-    username: review.user.username,
-    user: review.user.displayName ?? review.user.username,
-    avatar: review.user.avatar,
+    username: review.user?.username ?? '',
+    user: review.user?.displayName ?? review.user?.username ?? '',
+    avatar: review.user?.avatar ?? null,
     rating: review.rating,
     comment: review.text,
     liked: review.liked,
@@ -64,7 +64,7 @@ function serializeSpot(spot: {
     taggedPeople: string[];
     visitDate: Date | null;
     createdAt: Date;
-    user: { username: string; displayName: string | null; avatar: string | null };
+    user?: { username: string; displayName: string | null; avatar: string | null } | null;
   }[];
 }) {
   const image = spot.images[0]?.url || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800';
