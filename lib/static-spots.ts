@@ -66,13 +66,16 @@ export async function ensureStaticSpotExists(prisma: PrismaClient, id: string, u
 }
 
 export async function ensureSeedSpots(prisma: PrismaClient) {
-  const count = await prisma.studySpot.count();
-  if (count > 0) return;
-
   const firstUser = await prisma.user.findFirst({ select: { id: true }, orderBy: { createdAt: 'asc' } });
   if (!firstUser) return;
 
+  const existingIds = new Set(
+    (await prisma.studySpot.findMany({ select: { id: true } })).map((s) => s.id)
+  );
+
   for (const spot of ANN_ARBOR_SPOTS) {
-    await ensureStaticSpotExists(prisma, spot.id, firstUser.id);
+    if (!existingIds.has(spot.id)) {
+      await ensureStaticSpotExists(prisma, spot.id, firstUser.id);
+    }
   }
 }

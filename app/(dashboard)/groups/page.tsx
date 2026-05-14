@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, Users } from 'lucide-react';
+import { ChevronRight, Sparkles, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { useUser } from '@/hooks/useUser';
 
 type GroupRecord = {
@@ -14,12 +15,29 @@ type GroupRecord = {
   createdAt?: string;
 };
 
+type AIGroupMatch = {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  type: string;
+  reason: string;
+};
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
 export default function GroupsPage() {
   const router = useRouter();
   const { user } = useUser();
   const [tab, setTab] = useState<'my' | 'discover'>('my');
   const [groups, setGroups] = useState<GroupRecord[]>([]);
   const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  const { data: matchData, isLoading: matchLoading } = useSWR<{ matches: AIGroupMatch[] }>(
+    tab === 'discover' ? '/api/recommendations/groups' : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
 
   useEffect(() => {
     async function loadGroups() {
@@ -40,6 +58,9 @@ export default function GroupsPage() {
     () => groups.filter((group) => !group.members.some((member) => member.userId === user?.id)),
     [groups, user?.id]
   );
+
+  const aiMatches = matchData?.matches ?? [];
+  const aiMatchIds = new Set(aiMatches.map((m) => m.id));
 
   async function joinGroup(groupId: string) {
     setJoiningId(groupId);
@@ -115,29 +136,92 @@ export default function GroupsPage() {
           ))}
           {myGroups.length === 0 ? (
             <div className="rounded-2xl bg-[#F3F4F6] p-4 text-sm text-gray-600 shadow-md dark:bg-slate-800 dark:text-slate-300">
-              You haven’t joined any groups yet.
+              You haven&apos;t joined any groups yet.
             </div>
           ) : null}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {discoverGroups.map((group) => (
-            <div key={group.id} className="rounded-2xl bg-[#F3F4F6] p-4 shadow-md dark:bg-slate-800">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-[#2563EB] dark:bg-slate-700">
-                <Users className="h-5 w-5" />
+        <div className="space-y-5">
+          {(matchLoading || aiMatches.length > 0) && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-[#1E3A5F] dark:text-white">AI Matched for You</h2>
+                <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-[#2563EB] dark:bg-slate-800 dark:text-blue-400">
+                  <Sparkles className="h-3 w-3" /> AI
+                </span>
               </div>
-              <p className="font-semibold text-[#1E3A5F] dark:text-white">{group.name}</p>
-              <p className="mt-1 text-sm text-gray-500 dark:text-slate-300">{group.members.length} members</p>
-              <button
-                type="button"
-                onClick={() => joinGroup(group.id)}
-                disabled={joiningId === group.id}
-                className="spotly-button-primary mt-4 w-full py-2 text-sm"
-              >
-                {joiningId === group.id ? 'Joining...' : 'Join'}
-              </button>
+              {matchLoading ? (
+                <div className="space-y-2">
+                  {[0, 1].map((i) => (
+                    <div key={i} className="spotly-skeleton h-24 rounded-2xl" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {aiMatches.map((match) => (
+                    <div
+                      key={match.id}
+                      className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/60"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-[#2563EB] dark:bg-slate-700">
+                          <Users className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-[#1E3A5F] dark:text-white">{match.name}</p>
+                          <p className="mt-0.5 text-xs text-[#2563EB] dark:text-blue-400">{match.reason}</p>
+                          <p className="mt-1 text-xs text-gray-400">{match.memberCount} members</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => joinGroup(match.id)}
+                          disabled={joiningId === match.id}
+                          className="spotly-button-primary flex-shrink-0 px-3 py-1.5 text-xs"
+                        >
+                          {joiningId === match.id ? 'Joining...' : 'Join'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          ))}
+          )}
+
+          {discoverGroups.filter((g) => !aiMatchIds.has(g.id)).length > 0 && (
+            <div className="space-y-3">
+              {aiMatches.length > 0 && (
+                <h2 className="text-base font-bold text-[#1E3A5F] dark:text-white">All Groups</h2>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                {discoverGroups
+                  .filter((g) => !aiMatchIds.has(g.id))
+                  .map((group) => (
+                    <div key={group.id} className="rounded-2xl bg-[#F3F4F6] p-4 shadow-md dark:bg-slate-800">
+                      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-[#2563EB] dark:bg-slate-700">
+                        <Users className="h-5 w-5" />
+                      </div>
+                      <p className="font-semibold text-[#1E3A5F] dark:text-white">{group.name}</p>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-slate-300">{group.members.length} members</p>
+                      <button
+                        type="button"
+                        onClick={() => joinGroup(group.id)}
+                        disabled={joiningId === group.id}
+                        className="spotly-button-primary mt-4 w-full py-2 text-sm"
+                      >
+                        {joiningId === group.id ? 'Joining...' : 'Join'}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {!matchLoading && aiMatches.length === 0 && discoverGroups.length === 0 && (
+            <div className="rounded-2xl bg-[#F3F4F6] p-4 text-sm text-gray-600 shadow-md dark:bg-slate-800 dark:text-slate-300">
+              No groups to discover right now.
+            </div>
+          )}
         </div>
       )}
     </div>

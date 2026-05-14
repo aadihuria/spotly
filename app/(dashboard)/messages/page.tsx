@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BellRing, MessageSquare, MessageSquarePlus, Search, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,6 +9,7 @@ import { ConversationList } from '@/components/messages/ConversationList';
 import { MessageThread } from '@/components/messages/MessageThread';
 import { MessageComposer } from '@/components/messages/MessageComposer';
 import { useUser } from '@/hooks/useUser';
+import { useRealtime } from '@/hooks/useRealtime';
 
 type Conversation = {
   id: string;
@@ -77,6 +78,20 @@ export default function MessagesPage() {
   const [peopleQuery, setPeopleQuery] = useState('');
   const [peopleResults, setPeopleResults] = useState<Array<{ id: string; username: string; displayName?: string | null }>>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleIncomingMessage = useCallback((payload: unknown) => {
+    const incoming = payload as ThreadMessage;
+    setMessages((current) => {
+      if (current.some((m) => m.id === incoming.id)) return current;
+      return [...current, incoming];
+    });
+  }, []);
+
+  useRealtime(
+    selectedConversationId ? `conversation-${selectedConversationId}` : '',
+    'new-message',
+    handleIncomingMessage,
+  );
 
   async function loadInbox() {
     const [messagesRes, requestsRes] = await Promise.all([fetch('/api/messages'), fetch('/api/messages/requests')]);

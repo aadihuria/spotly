@@ -133,7 +133,7 @@ export function SignupForm() {
         return;
       }
 
-      router.push('/login');
+      router.push('/login?verified=1');
     } catch {
       setError(['Could not verify your email. Please try again.']);
     } finally {
@@ -253,13 +253,17 @@ export function SignupForm() {
           <label htmlFor="signup-university" className="text-sm font-semibold text-[#1E3A5F]">
             University
           </label>
-          <input
+          <select
             id="signup-university"
             name="university"
             required
-            placeholder="University / College"
-            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-[#1E3A5F] outline-none transition placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500"
-          />
+            defaultValue=""
+            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-[#1E3A5F] outline-none transition focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="" disabled>Select your university</option>
+            <option value="University of Michigan - Ann Arbor">University of Michigan - Ann Arbor</option>
+            <option value="University of Michigan - Dearborn">University of Michigan - Dearborn</option>
+          </select>
         </div>
       </div>
       <div className="space-y-2">
