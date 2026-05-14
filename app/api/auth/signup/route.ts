@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     }
 
     const existingByEmail = await prisma.user.findUnique({
-      where: { email: parsed.data.email },
+      where: { email: parsed.data.email.toLowerCase() },
       select: {
         id: true,
         email: true,
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
 
     const exists = await prisma.user.findFirst({
       where: {
-        OR: [{ email: parsed.data.email }, { username: parsed.data.username }],
+        OR: [{ email: parsed.data.email.toLowerCase() }, { username: parsed.data.username }],
       },
     });
 
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
     const code = generateVerificationCode();
     const user = await prisma.user.create({
       data: {
-        email: parsed.data.email,
+        email: parsed.data.email.toLowerCase(),
         phone: parsed.data.phone,
         username: parsed.data.username,
         university: parsed.data.university,
