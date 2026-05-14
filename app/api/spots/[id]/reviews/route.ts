@@ -51,7 +51,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     ? await prisma.friendship.findMany({
         where: {
           status: 'accepted',
-          OR: requestedTagIds.flatMap((friendId) => [
+          OR: requestedTagIds.flatMap((friendId: string) => [
             { requesterId: session.user.id, addresseeId: friendId },
             { requesterId: friendId, addresseeId: session.user.id },
           ]),
