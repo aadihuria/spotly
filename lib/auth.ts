@@ -96,13 +96,13 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: { token: Record<string, unknown>; user?: { id?: string } | null }) {
+    async jwt({ token, user }) {
       if (user) token.userId = user.id;
       return token;
     },
-    async session({ session, token }: { session: { user?: { id?: string } }; token: Record<string, unknown> }) {
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.userId as string;
+        (session.user as { id?: string }).id = token.userId as string;
       }
       return session;
     },

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BellRing, MessageSquare, MessageSquarePlus, Search, Sparkles } from 'lucide-react';
@@ -61,7 +62,7 @@ function formatRelativeTime(value?: string | null) {
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-export default function MessagesPage() {
+function MessagesPageContent() {
   const { user } = useUser();
   const searchParams = useSearchParams();
   const friendRecipientId = searchParams.get('user');
@@ -487,5 +488,13 @@ export default function MessagesPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense>
+      <MessagesPageContent />
+    </Suspense>
   );
 }
