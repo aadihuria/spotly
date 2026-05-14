@@ -45,7 +45,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: 'Rating must be between 0 and 10' }, { status: 400 });
   }
 
-  const requestedTagIds = Array.isArray(body.taggedFriendIds) ? body.taggedFriendIds.map(String) : [];
+  const requestedTagIds: string[] = Array.isArray(body.taggedFriendIds) ? (body.taggedFriendIds as unknown[]).map(String) : [];
 
   const friendships = requestedTagIds.length
     ? await prisma.friendship.findMany({
